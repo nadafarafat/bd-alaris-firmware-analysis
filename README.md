@@ -42,16 +42,16 @@ The device stores wireless network credentials in **plaintext XML files** on NAN
 - **Environment:** Kali Linux
 
 ### Tools Used
-- `binwalk` - Firmware extraction
-- `UBI Reader` - UBIFS filesystem reconstruction
-- `strings` / `xxd` - Binary analysis
+- binwalk - Firmware extraction
+- UBI Reader - UBIFS filesystem reconstruction
+- strings / xxd - Binary analysis
 - Python 3 - Custom UBIFS traversal scripts
 - Entropy analysis tools
 
 ### Analysis Steps
 1. Firmware package extraction and hash verification
 2. UBIFS filesystem reconstruction from NAND image
-3. Credential path identification (`/etc/summit/`)
+3. Credential path identification (/etc/summit/)
 4. XPath extraction from OSE.ELF binary (WlanProfileParser class)
 5. Entropy analysis confirming absence of encryption
 6. Compound vulnerability identification
@@ -68,74 +68,49 @@ The device stores wireless network credentials in **plaintext XML files** on NAN
 | Main Binary | OSE.ELF (7.86 MB ARM ELF) |
 
 ### Credential Storage Location
-```
 /etc/summit/[ProfileName].xml
-```
 
 ### Vulnerable XPaths (from OSE.ELF)
-```
 /PSK/Passphrase/text()
 /Password/text()
 /PEAP/Identity/text()
 /EAPTLS/PrivateKeyPassphrase/text()
 /EAPTLS/UserCertPassphrase/text()
 /AES/Key/text()
-```
 
 ## Threat Model (STRIDE)
 
 | Category | Threat | Impact |
 |----------|--------|--------|
-| **Spoofing** | Stolen Wi-Fi PSK used to join hospital network | Network compromise |
-| **Tampering** | HTTP firmware channel allows malicious updates | Device compromise |
-| **Repudiation** | Disabled CRC leaves no audit trail | Undetectable tampering |
-| **Info Disclosure** | CVE-2016-9355 plaintext credential extraction | Credential theft |
-| **Denial of Service** | ProFTPD stack overflow (CVE-2010-4221) | Service crash |
-| **Elevation of Privilege** | Domain credentials enable lateral movement | Hospital-wide breach |
+| Spoofing | Stolen Wi-Fi PSK used to join hospital network | Network compromise |
+| Tampering | HTTP firmware channel allows malicious updates | Device compromise |
+| Repudiation | Disabled CRC leaves no audit trail | Undetectable tampering |
+| Info Disclosure | CVE-2016-9355 plaintext credential extraction | Credential theft |
+| Denial of Service | ProFTPD stack overflow (CVE-2010-4221) | Service crash |
+| Elevation of Privilege | Domain credentials enable lateral movement | Hospital-wide breach |
 
 ## Mitigations
 
 | Threat | Mitigation | Status |
 |--------|------------|--------|
-| Plaintext credentials | AES encryption with hardware-bound key (HKDF from GUID) | ✅ Fixed in v9.5+ |
-| HTTP firmware updates | HTTPS + RSA/ECDSA code signing | ❌ Not addressed |
-| MD5 integrity | SHA-256 + signed manifest | ❌ Not addressed |
-| Disabled OSE.ELF CRC | SHA-256 verification at boot | ❌ Not addressed |
-| ProFTPD vulnerabilities | Update to 1.3.8 or disable service | ❌ Not addressed |
-
-## Repository Structure
-
-```
-bd-alaris-firmware-analysis/
-├── README.md
-├── docs/
-│   ├── threat-model.md
-│   └── stride-analysis.md
-├── analysis/
-│   ├── xpath-extraction.py
-│   └── entropy-analysis.py
-└── diagrams/
-    ├── data-flow-diagram.png
-    └── attack-tree.png
-```
+| Plaintext credentials | AES encryption with hardware-bound key (HKDF from GUID) | Fixed in v9.5+ |
+| HTTP firmware updates | HTTPS + RSA/ECDSA code signing | Not addressed |
+| MD5 integrity | SHA-256 + signed manifest | Not addressed |
+| Disabled OSE.ELF CRC | SHA-256 verification at boot | Not addressed |
+| ProFTPD vulnerabilities | Update to 1.3.8 or disable service | Not addressed |
 
 ## References
 
-- [ICS-CERT Advisory ICSMA-16-333-01](https://www.cisa.gov/news-events/ics-medical-advisories/icsma-20-317-01)
-- [CVE-2016-9355 (NVD)](https://nvd.nist.gov/vuln/detail/CVE-2016-9355)
-- [MITRE Playbook for Threat Modeling Medical Devices](https://www.mitre.org/publications/technical-papers)
-- Shostack, A. (2014). *Threat Modeling: Designing for Security*. Wiley.
+- ICS-CERT Advisory ICSMA-16-333-01: https://www.cisa.gov/news-events/ics-medical-advisories/icsma-20-317-01
+- CVE-2016-9355 (NVD): https://nvd.nist.gov/vuln/detail/CVE-2016-9355
+- MITRE Playbook for Threat Modeling Medical Devices
 
 ## Disclaimer
 
 This research was conducted for academic purposes under the Medical Device Cybersecurity course at Northeastern University. All analysis was performed on firmware images only — no physical devices were accessed. Credential samples shown are fictional and for demonstration purposes only.
 
-## License
-
-This project is for educational purposes. Please cite appropriately if referencing this work.
-
 ---
 
 **Author:** Mohammed Arafat Nadaf  
-**GitHub:** [github.com/nadafarafat](https://github.com/nadafarafat)  
-**LinkedIn:** [linkedin.com/in/arafatnadaf](https://linkedin.com/in/arafatnadaf)
+**GitHub:** github.com/nadafarafat  
+**LinkedIn:** linkedin.com/in/arafatnadaf
